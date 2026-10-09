@@ -1,0 +1,27 @@
+services:
+  go2-server:
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile
+    image: go2-server:local
+    container_name: go2-server
+    profiles: ["server"]
+    env_file: .env
+
+    # Rede do host, como a go2-api: fala com ela por 127.0.0.1:8000 e escuta a
+    # TV Box na porta 9000 do PC. Só funciona assim em Linux.
+    network_mode: host
+
+    volumes:
+      # Modelos (Whisper e embeddings) baixados na primeira subida.
+      - models:/models
+      # Frases capturadas com GO2S_SAVE_UTTERANCES=1.
+      - ./captures:/srv/captures
+
+    # Teto de CPU: a go2-api reenvia o `Move` a 40 Hz no mesmo PC e não pode
+    # ficar sem processador durante uma transcrição. Ajuste ao hardware.
+    cpus: 4.0
+    restart: unless-stopped
+
+volumes:
+  models:

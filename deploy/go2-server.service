@@ -1,0 +1,25 @@
+# Alternativa ao Docker: serviço systemd rodando direto com o uv.
+#
+#   sudo cp deploy/go2-server.service /etc/systemd/system/
+#   sudo systemctl daemon-reload && sudo systemctl enable --now go2-server
+#   journalctl -u go2-server -f
+#
+# Ajuste User e WorkingDirectory. Antes, dentro do repo: `uv sync --no-dev`.
+
+[Unit]
+Description=go2-server: inferência e despacho de comandos de voz do Go2
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=neuron
+WorkingDirectory=/home/neuron/go2-server
+ExecStart=/usr/bin/env uv run --frozen --no-dev uvicorn app.main:create_app --factory --host 0.0.0.0 --port 9000
+Restart=on-failure
+RestartSec=3
+# Mesmo motivo do `cpus` no compose: não disputar CPU com a go2-api.
+CPUQuota=400%
+Nice=5
+
+[Install]
+WantedBy=multi-user.target
