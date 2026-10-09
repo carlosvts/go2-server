@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.env
+# Modelos baixados e frases capturadas (áudio de pessoas: não versionar).
+models/
+captures/
+bench/
