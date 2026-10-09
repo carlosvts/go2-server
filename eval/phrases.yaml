@@ -1,0 +1,193 @@
+# Conjunto rotulado para a calibração (scripts/calibrate.py).
+#
+# `expect` é o desfecho certo da frase JÁ TRANSCRITA:
+#   [ids]     os comandos do catálogo, na ordem
+#   stop      parada
+#   reject    nada pode ser executado
+#   ignored   só a wake word
+#
+# Estas frases foram escritas à mão, não vieram de fala real. Acrescente aqui
+# as transcrições capturadas com GO2S_SAVE_UTTERANCES=1, com o rótulo certo.
+
+# ─── Frases do edge (têm de passar todas) ──────────────────────────────────
+- {text: "levanta", expect: [stand_up]}
+- {text: "senta", expect: [sit]}
+- {text: "deita", expect: [stand_down]}
+- {text: "cumprimentar", expect: [hello]}
+- {text: "cumprimente", expect: [hello]}
+- {text: "alonga", expect: [stretch]}
+- {text: "coração", expect: [finger_heart]}
+- {text: "desligar motores", expect: [damp]}
+- {text: "andar para frente", expect: [move_forward]}
+- {text: "andar para trás", expect: [move_backward]}
+- {text: "andar para a direita", expect: [strafe_right]}
+- {text: "andar para direita", expect: [strafe_right]}
+- {text: "andar para a esquerda", expect: [strafe_left]}
+- {text: "virar para a direita", expect: [turn_right]}
+- {text: "virar para esquerda", expect: [turn_left]}
+
+# ─── Variações que o servidor deveria entender ─────────────────────────────
+- {text: "Senta.", expect: [sit]}
+- {text: "sentar", expect: [sit]}
+- {text: "senta aí", expect: [sit]}
+- {text: "por favor, senta", expect: [sit]}
+- {text: "fique sentado", expect: [sit]}
+- {text: "pode sentar", expect: [sit]}
+- {text: "senta no chão", expect: [sit]}
+- {text: "levante-se", expect: [stand_up]}
+- {text: "fica de pé", expect: [stand_up]}
+- {text: "pode levantar", expect: [stand_up]}
+- {text: "fique em pé", expect: [stand_up]}
+- {text: "deite-se", expect: [stand_down]}
+- {text: "pode deitar", expect: [stand_down]}
+- {text: "deita no chão", expect: [stand_down]}
+- {text: "acena", expect: [hello]}
+- {text: "me cumprimenta", expect: [hello]}
+- {text: "dá um oi para a gente", expect: [hello]}
+- {text: "acena para mim", expect: [hello]}
+- {text: "se alonga", expect: [stretch]}
+- {text: "faz um alongamento", expect: [stretch]}
+- {text: "se espreguiça", expect: [stretch]}
+- {text: "faz um coração", expect: [finger_heart]}
+- {text: "faz um coração com as patas", expect: [finger_heart]}
+- {text: "manda um coraçãozinho", expect: [finger_heart]}
+- {text: "anda pra frente", expect: [move_forward]}
+- {text: "por favor anda um pouco para frente", expect: [move_forward]}
+- {text: "caminhe para frente", expect: [move_forward]}
+- {text: "vai pra frente", expect: [move_forward]}
+- {text: "anda para trás", expect: [move_backward]}
+- {text: "vá para trás", expect: [move_backward]}
+- {text: "anda de ré", expect: [move_backward]}
+- {text: "gira para a direita", expect: [turn_right]}
+- {text: "vire à esquerda", expect: [turn_left]}
+- {text: "gire pra esquerda", expect: [turn_left]}
+- {text: "caminha para a esquerda", expect: [strafe_left]}
+- {text: "avance para frente", expect: [move_forward]}
+- {text: "recue para trás", expect: [move_backward]}
+- {text: "rode para a direita", expect: [turn_right]}
+
+# ─── Compostas ─────────────────────────────────────────────────────────────
+- {text: "senta e depois levanta", expect: [sit, stand_up]}
+- {text: "levanta, anda para frente e vira para a esquerda", expect: [stand_up, move_forward, turn_left]}
+- {text: "Levanta. Depois senta.", expect: [stand_up, sit]}
+- {text: "anda para frente e depois anda para trás", expect: [move_forward, move_backward]}
+- {text: "cumprimente, então deita", expect: [hello, stand_down]}
+- {text: "vira para a direita e vira para a esquerda", expect: [turn_right, turn_left]}
+- {text: "senta, em seguida alonga", expect: [sit, stretch]}
+
+# ─── Confusão entre verbos de movimento com a mesma direção ────────────────
+- {text: "andar para a direita", expect: [strafe_right]}
+- {text: "virar para a direita", expect: [turn_right]}
+- {text: "anda pra esquerda", expect: [strafe_left]}
+- {text: "vira pra esquerda", expect: [turn_left]}
+- {text: "girar para direita", expect: [turn_right]}
+- {text: "caminhar para direita", expect: [strafe_right]}
+
+# ─── Com a wake word no início ─────────────────────────────────────────────
+- {text: "hey jarvis senta", expect: [sit]}
+- {text: "Hey, Jarvis. Levanta!", expect: [stand_up]}
+- {text: "Ei Jarvis, anda para frente", expect: [move_forward]}
+- {text: "Rei Jarvis vira para a direita", expect: [turn_right]}
+- {text: "Jarvis, deita", expect: [stand_down]}
+- {text: "hey jarvis senta e depois levanta", expect: [sit, stand_up]}
+- {text: "hey jarvis para", expect: stop}
+- {text: "Hey Jarvis, pare!", expect: stop}
+- {text: "hey jarvis não senta", expect: reject}
+- {text: "hey jarvis que horas são", expect: reject}
+- {text: "hey jarvis", expect: ignored}
+- {text: "Hey, Jarvis.", expect: ignored}
+- {text: "Ei Jarvis", expect: ignored}
+
+# ─── Parada ────────────────────────────────────────────────────────────────
+- {text: "para", expect: stop}
+- {text: "pare", expect: stop}
+- {text: "parar", expect: stop}
+- {text: "stop", expect: stop}
+- {text: "Para!", expect: stop}
+- {text: "para para para", expect: stop}
+- {text: "pare agora", expect: stop}
+- {text: "pode parar", expect: stop}
+- {text: "fica parado", expect: stop}
+- {text: "senta e para", expect: stop}
+
+# ─── "para" como preposição não é parada ───────────────────────────────────
+- {text: "para frente", expect: reject}
+- {text: "para a direita", expect: reject}
+- {text: "para trás", expect: reject}
+
+# ─── Negação ───────────────────────────────────────────────────────────────
+- {text: "não senta", expect: reject}
+- {text: "não levanta", expect: reject}
+- {text: "nunca deita", expect: reject}
+- {text: "não anda para frente", expect: reject}
+- {text: "senta e não levanta", expect: reject}
+- {text: "eu não quero que você ande para frente", expect: reject}
+- {text: "anda para frente sem virar", expect: reject}
+- {text: "não é para sentar", expect: reject}
+
+# ─── Movimento incompleto ou inválido ──────────────────────────────────────
+- {text: "anda", expect: reject}
+- {text: "vira", expect: reject}
+- {text: "frente", expect: reject}
+- {text: "direita", expect: reject}
+- {text: "virar para frente", expect: reject}
+- {text: "vira para trás", expect: reject}
+- {text: "anda logo", expect: reject}
+- {text: "anda para frente e para trás", expect: reject}
+- {text: "pula para frente", expect: reject}
+- {text: "olha para a direita", expect: reject}
+- {text: "aponta para a esquerda", expect: reject}
+
+# ─── Parecidas com comandos, mas não são ───────────────────────────────────
+- {text: "levanta a pata", expect: reject}
+- {text: "senta e rola", expect: reject}
+- {text: "deita e rola", expect: reject}
+- {text: "o coração dele bate forte", expect: reject}
+- {text: "meu coração", expect: reject}
+- {text: "santa", expect: reject}
+- {text: "sinta", expect: reject}
+- {text: "levante a mão quem concorda", expect: reject}
+- {text: "o cachorro sentou", expect: reject}
+- {text: "ele vai deitar mais tarde", expect: reject}
+- {text: "desligar a luz", expect: reject}
+- {text: "desliga tudo", expect: reject}
+- {text: "desligar", expect: reject}
+- {text: "motores", expect: reject}
+- {text: "liga os motores", expect: reject}
+- {text: "corta a energia", expect: reject}
+- {text: "cumprimentos a todos", expect: reject}
+- {text: "alongamento é importante antes do treino", expect: reject}
+
+# ─── Comandos que existem na go2-api e estão desabilitados ─────────────────
+- {text: "dança", expect: reject}
+- {text: "dançar", expect: reject}
+- {text: "rebola", expect: reject}
+- {text: "faz uma pose", expect: reject}
+- {text: "dá um salto mortal", expect: reject}
+- {text: "planta bananeira", expect: reject}
+
+# ─── Fora do catálogo ──────────────────────────────────────────────────────
+- {text: "qual é a previsão do tempo", expect: reject}
+- {text: "que horas são", expect: reject}
+- {text: "toca uma música", expect: reject}
+- {text: "obrigado", expect: reject}
+- {text: "tchau", expect: reject}
+- {text: "bom dia", expect: reject}
+- {text: "oi", expect: reject}
+- {text: "tudo bem com você", expect: reject}
+- {text: "quanto é dois mais dois", expect: reject}
+- {text: "abre a porta", expect: reject}
+- {text: "liga a luz da sala", expect: reject}
+- {text: "me conta uma piada", expect: reject}
+- {text: "late", expect: reject}
+- {text: "dá a patinha", expect: reject}
+- {text: "rola", expect: reject}
+- {text: "finge de morto", expect: reject}
+- {text: "busca a bolinha", expect: reject}
+- {text: "vem aqui", expect: reject}
+- {text: "corre", expect: reject}
+- {text: "pula", expect: reject}
+- {text: "legendas pela comunidade amara.org", expect: reject}
+- {text: "eu acho que vou almoçar agora", expect: reject}
+- {text: "esse robô é muito legal", expect: reject}
+- {text: "quem foi que deixou a porta aberta", expect: reject}
