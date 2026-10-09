@@ -64,7 +64,9 @@ movement:
     andar: {frente: move_forward, trás: move_backward, direita: strafe_right, esquerda: strafe_left}
     virar: {direita: turn_right, esquerda: turn_left}
   verb_synonyms:
-    andar: [anda, ande, caminhar, caminha, caminhe, ir, vai, vá]
+    # "ir" ficou de fora de propósito: no benchmark o Whisper ouviu "vira pra
+    # esquerda" como "ir para a esquerda", e o robô andaria de lado em vez de virar.
+    andar: [anda, ande, caminhar, caminha, caminhe, vai, vá]
     virar: [vira, vire, girar, gira, gire]
   direction_synonyms:
     frente: [adiante]

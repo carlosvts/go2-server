@@ -186,7 +186,7 @@ movement:
   settle_s: 0.5  # INFERIDO, REVISAR
   ignore: [para, a, o, à, ao]  # INFERIDO
   verbs:
-    andar: [andar, anda, ande, caminhar, caminha, caminhe, ir, vai, vá]  # 1ª do edge, demais INFERIDAS
+    andar: [andar, anda, ande, caminhar, caminha, caminhe, vai, vá]  # 1ª do edge, demais INFERIDAS
     virar: [virar, vira, vire, girar, gira, gire]  # 1ª do edge, demais INFERIDAS
   directions:
     frente: [frente, adiante]  # 1ª do edge, demais INFERIDAS

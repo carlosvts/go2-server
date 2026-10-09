@@ -86,6 +86,11 @@ def test_movement_verbs_with_the_same_direction_do_not_mix(interpreter, catalog)
     assert catalog.step("strafe_right").call.body["vy"] < 0
 
 
+def test_mishearing_of_turn_is_not_a_walk(interpreter):
+    """O Whisper ouviu "vira pra esquerda" como "ir para a esquerda"."""
+    assert run(interpreter, "ir para a esquerda")[0] == REJECT
+
+
 def test_compound_sentence(interpreter):
     assert run(interpreter, "senta e depois levanta")[0] == ["sit", "stand_up"]
     assert run(interpreter, "Levanta, anda para frente e vira para a esquerda.")[0] == [
