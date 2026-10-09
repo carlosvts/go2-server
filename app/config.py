@@ -31,9 +31,13 @@ class Settings(BaseSettings):
 
     # ─── Transcrição ───────────────────────────────────────────────────────
     stt_engine: Literal["whisper", "vosk"] = "whisper"
-    whisper_model: str = "small"
-    whisper_compute_type: str = "int8"
-    # Threads de CPU por transcrição. Baixo de propósito: o servidor divide o
+    whisper_model: str = "medium"
+    # "auto" usa a GPU (CUDA) se houver e funcionar, senão a CPU. O `medium` é
+    # pensado para a GPU: na CPU ele pode passar do tempo que a TV Box espera.
+    whisper_device: Literal["auto", "cuda", "cpu"] = "auto"
+    # "auto" = float16 na GPU e int8 na CPU.
+    whisper_compute_type: str = "auto"
+    # Threads de CPU por transcrição (só valem na CPU). Baixo de propósito: o servidor divide o
     # PC com a go2-api, que reenvia o `Move` a 40 Hz.
     whisper_cpu_threads: int = Field(default=4, ge=1)
     whisper_beam_size: int = Field(default=5, ge=1)

@@ -18,6 +18,9 @@ services:
       # Frases capturadas com GO2S_SAVE_UTTERANCES=1.
       - ./captures:/srv/captures
 
+    # Whisper na GPU: exige o NVIDIA Container Toolkit no host.
+    # gpus: all
+
     # Teto de CPU: a go2-api reenvia o `Move` a 40 Hz no mesmo PC e não pode
     # ficar sem processador durante uma transcrição. Ajuste ao hardware.
     cpus: 4.0

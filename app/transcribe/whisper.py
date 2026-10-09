@@ -11,10 +11,14 @@ O Whisper inventa texto em silêncio e ruído ("Obrigado por assistir",
 5. transcrição vazia ou na lista de alucinações conhecidas ⇒ rejeita.
 """
 
+import logging
+
 import numpy as np
 
 from app.interpret.text import fold, tokenize, words
 from app.transcribe.base import Transcription
+
+log = logging.getLogger(__name__)
 
 
 def text_key(text: str) -> str:
@@ -24,8 +28,9 @@ def text_key(text: str) -> str:
 class WhisperTranscriber:
     def __init__(
         self,
-        model: str = "small",
-        compute_type: str = "int8",
+        model: str = "medium",
+        device: str = "auto",
+        compute_type: str = "auto",
         cpu_threads: int = 4,
         num_workers: int = 2,
         beam_size: int = 5,
@@ -34,20 +39,50 @@ class WhisperTranscriber:
         max_compression_ratio: float = 2.4,
         hallucinations: list[str] | None = None,
     ) -> None:
-        from faster_whisper import WhisperModel
-
-        self._model = WhisperModel(
-            model,
-            device="cpu",
-            compute_type=compute_type,
-            cpu_threads=cpu_threads,
-            num_workers=num_workers,
+        self._model, self.device, self.compute_type = self._load(
+            model, device, compute_type, cpu_threads, num_workers
         )
         self._beam_size = beam_size
         self._no_speech_threshold = no_speech_threshold
         self._min_avg_logprob = min_avg_logprob
         self._max_compression_ratio = max_compression_ratio
         self._hallucinations = {text_key(text) for text in hallucinations or []}
+
+    @staticmethod
+    def _load(model: str, device: str, compute_type: str, cpu_threads: int, num_workers: int):
+        """Carrega na GPU quando pedido ou disponível; em "auto", cai para a CPU se ela falhar.
+
+        A falha típica da GPU (bibliotecas CUDA/cuDNN ausentes) só aparece na
+        primeira transcrição, então o modelo é testado com um áudio em branco.
+        """
+        import ctranslate2
+        from faster_whisper import WhisperModel
+
+        devices = [device]
+        if device == "auto":
+            devices = ["cuda", "cpu"] if ctranslate2.get_cuda_device_count() > 0 else ["cpu"]
+        for index, name in enumerate(devices):
+            kind = compute_type
+            if kind == "auto":
+                kind = "float16" if name == "cuda" else "int8"
+            try:
+                loaded = WhisperModel(
+                    model,
+                    device=name,
+                    compute_type=kind,
+                    cpu_threads=cpu_threads,
+                    num_workers=num_workers,
+                )
+                segments, _ = loaded.transcribe(np.zeros(16000, dtype=np.float32), language="pt")
+                list(segments)
+            except Exception as error:
+                if index == len(devices) - 1:
+                    raise
+                log.warning("Whisper não subiu em %s (%s); tentando %s.", name, error, devices[-1])
+                continue
+            log.info("Whisper %s em %s (%s).", model, name, kind)
+            return loaded, name, kind
+        raise RuntimeError("nenhum dispositivo para o Whisper")
 
     def transcribe(self, audio: np.ndarray) -> Transcription:
         segments, _ = self._model.transcribe(

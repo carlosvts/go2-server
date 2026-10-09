@@ -28,7 +28,18 @@ uv sync
 uv run uvicorn app.main:create_app --factory --host 0.0.0.0 --port 9000
 ```
 
-Na primeira subida o servidor baixa o modelo do Whisper (~460 MB para `small`) e o de embeddings (~470 MB). O log mostra `go2-server pronto` quando aceita frases.
+Na primeira subida o servidor baixa o modelo do Whisper (`medium`, ~1,5 GB) e o de embeddings (~470 MB). O log mostra `go2-server pronto` quando aceita frases.
+
+### GPU
+
+O padrão é o Whisper `medium`, pensado para rodar na GPU (`GO2S_WHISPER_DEVICE=auto` usa CUDA se houver). Para a GPU funcionar, o driver da NVIDIA tem de estar instalado e o processo precisa enxergar as bibliotecas cuBLAS e cuDNN 9 para CUDA 12. Sem elas no sistema:
+
+```bash
+uv sync --extra gpu
+export LD_LIBRARY_PATH=$(uv run python -c 'import nvidia.cublas, nvidia.cudnn; print(nvidia.cublas.__path__[0] + "/lib:" + nvidia.cudnn.__path__[0] + "/lib")')
+```
+
+Confira no log da subida a linha `Whisper medium em cuda (float16)`. Se aparecer `Whisper não subiu em cuda (...); tentando cpu`, a GPU falhou e o servidor caiu para a CPU: o `medium` na CPU pode demorar mais que os 5 s que a TV Box espera, então corrija a GPU ou use `GO2S_WHISPER_MODEL=small` ou `base`. O caminho da GPU **não foi testado** (o desenvolvimento foi numa máquina sem placa).
 
 Na TV Box, aponte o edge para ele e **corrija os status aceitos** (o padrão do edge não inclui os deste servidor):
 
@@ -44,7 +55,7 @@ docker compose --profile server up -d --build
 docker compose logs -f go2-server
 ```
 
-O container usa a rede do host, como o da go2-api, e tem teto de 4 CPUs para não tirar processador do reenvio do `Move`. Como serviço systemd, sem Docker: instruções em `deploy/go2-server.service`.
+O container usa a rede do host, como o da go2-api, e tem teto de 4 CPUs para não tirar processador do reenvio do `Move`. Para o container usar a GPU, instale o NVIDIA Container Toolkit e descomente `gpus: all` no `docker-compose.yml`. Como serviço systemd, sem Docker: instruções em `deploy/go2-server.service`.
 
 ### Testar sem a TV Box
 
@@ -192,7 +203,7 @@ tests/
 ## O que falta validar
 
 1. **Fala real.** A precisão e a revocação foram medidas em texto escrito à mão. Com microfone, sotaque e ruído, a transcrição erra de formas que o conjunto não cobre.
-2. **Latência e memória no PC de destino.** O desenvolvimento foi feito em outra máquina. Rode `scripts/bench_stt.py` no PC da go2-api para escolher entre `base` e `small` e conferir a latência da parada falada.
+2. **Latência e memória no PC de destino, e o Whisper na GPU.** O desenvolvimento foi feito em outra máquina, sem placa. Rode `scripts/bench_stt.py` no PC da go2-api para confirmar que o `medium` sobe em `cuda` e conferir a latência da parada falada.
 3. **Vosk com modelo grande.** `vosk-model-pt-fb-v0.1.1` (1,6 GB) não foi medido: o download não completou. O script já o compara se a pasta estiver em `models/`.
 4. **go2-api real e o robô.** Nenhuma chamada saiu para a API de verdade. Em especial: `balance_stand` antes de andar (sentado e deitado), as durações de cada gesto, e se o `stop` interrompe um gesto.
 5. **Modo thin.** Não existe na branch lida do go2-tvbox; só os testes e o `send_wav.py` enviam `reason="wake_word"`.

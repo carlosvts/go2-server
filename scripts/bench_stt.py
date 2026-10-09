@@ -108,6 +108,7 @@ def load_engine(spec: str, settings: Settings, threads: int):
 
         return WhisperTranscriber(
             model=name,
+            device=settings.whisper_device,
             compute_type=settings.whisper_compute_type,
             cpu_threads=threads,
             num_workers=1,
@@ -191,7 +192,7 @@ def run_engine(spec: str, cases: list[dict], threads: int) -> dict:
 
 def main() -> int:
     settings = Settings()
-    default_engines = ["whisper:base", "whisper:small"]
+    default_engines = ["whisper:base", "whisper:small", "whisper:medium"]
     if settings.vosk_model_path.is_dir():
         default_engines.append(f"vosk:{settings.vosk_model_path}")
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])

@@ -21,6 +21,8 @@ dependencies = [
 [project.optional-dependencies]
 # Só para o benchmark e para quem escolher GO2S_STT_ENGINE=vosk.
 vosk = ["vosk>=0.3.45"]
+# Bibliotecas CUDA que o Whisper na GPU precisa, para quem não as tem no sistema.
+gpu = ["nvidia-cublas-cu12", "nvidia-cudnn-cu12>=9,<10"]
 
 [dependency-groups]
 dev = [
