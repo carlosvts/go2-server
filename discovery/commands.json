@@ -1,0 +1,38 @@
+{
+  "stop_words": ["para", "pare", "parar", "stop"],
+  "phrases": {
+    "para": "stop",
+    "pare": "stop",
+    "parar": "stop",
+    "stop": "stop",
+    "levanta": "stand_up",
+    "senta": "sit",
+    "deita": "stand_down",
+    "cumprimentar": "hello",
+    "cumprimente": "hello",
+    "alonga": "stretch",
+    "coração": "finger_heart",
+    "desligar motores": "damp",
+    "andar para frente": {"command": "move", "args": {"vx": 0.3, "vy": 0.0, "vyaw": 0.0, "duration_s": 1.0}},
+    "andar para trás": {"command": "move", "args": {"vx": -0.5, "vy": 0.0, "vyaw": 0.0, "duration_s": 1.0}},
+    "andar para a direita": {"command": "move", "args": {"vx": 0.0, "vy": -0.5, "vyaw": 0.0, "duration_s": 1.0}},
+    "andar para direita": {"command": "move", "args": {"vx": 0.0, "vy": -0.5, "vyaw": 0.0, "duration_s": 1.0}},
+    "andar para a esquerda": {"command": "move", "args": {"vx": 0.0, "vy": 0.5, "vyaw": 0.0, "duration_s": 1.0}},
+    "andar para esquerda": {"command": "move", "args": {"vx": 0.0, "vy": 0.5, "vyaw": 0.0, "duration_s": 1.0}},
+    "virar para a direita": {"command": "move", "args": {"vx": 0.0, "vy": 0.0, "vyaw": -0.5, "duration_s": 1.0}},
+    "virar para direita": {"command": "move", "args": {"vx": 0.0, "vy": 0.0, "vyaw": -0.5, "duration_s": 1.0}},
+    "virar para a esquerda": {"command": "move", "args": {"vx": 0.0, "vy": 0.0, "vyaw": 0.5, "duration_s": 1.0}},
+    "virar para esquerda": {"command": "move", "args": {"vx": 0.0, "vy": 0.0, "vyaw": 0.5, "duration_s": 1.0}}
+  },
+  "commands": {
+    "stand_up": {"method": "POST", "endpoint": "/commands/posture", "sport_cmd": "StandUp", "params": ["cmd"]},
+    "sit": {"method": "POST", "endpoint": "/commands/posture", "sport_cmd": "Sit", "params": ["cmd"]},
+    "stand_down": {"method": "POST", "endpoint": "/commands/posture", "sport_cmd": "StandDown", "params": ["cmd"]},
+    "damp": {"method": "POST", "endpoint": "/commands/posture", "sport_cmd": "Damp", "params": ["cmd"]},
+    "move": {"method": "POST", "endpoint": "/commands/move", "sport_cmd": "Move", "params": ["vx", "vy", "vyaw", "duration_s"]},
+    "stop": {"method": "POST", "endpoint": "/commands/stop", "sport_cmd": "StopMove", "params": []},
+    "hello": {"method": "POST", "endpoint": "/commands/gesture", "sport_cmd": "Hello", "params": ["cmd"]},
+    "stretch": {"method": "POST", "endpoint": "/commands/gesture", "sport_cmd": "Stretch", "params": ["cmd"]},
+    "finger_heart": {"method": "POST", "endpoint": "/commands/gesture", "sport_cmd": "FingerHeart", "params": ["cmd"]}
+  }
+}

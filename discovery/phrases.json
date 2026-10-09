@@ -1,0 +1,37 @@
+{
+  "prefixos": [""],
+  "sufixos": [""],
+  "parada": {"comando": "stop", "palavras": ["para", "pare", "parar", "stop"]},
+  "acoes": {
+    "levanta": "stand_up",
+    "senta": "sit",
+    "deita": "stand_down",
+    "cumprimentar": "hello",
+    "cumprimente": "hello",
+    "alonga": "stretch",
+    "coração": "finger_heart",
+    "desligar motores": "damp"
+  },
+  "direcoes": {
+    "frente": ["para"],
+    "trás": ["para"],
+    "direita": ["para a", "para"],
+    "esquerda": ["para a", "para"]
+  },
+  "movimentos": {
+    "comando": "move",
+    "padrao": {"vx": 0.0, "vy": 0.0, "vyaw": 0.0, "duration_s": 1.0},
+    "verbos": {
+      "andar": {
+        "frente": {"vx": 0.3},
+        "trás": {"vx": -0.5},
+        "direita": {"vy": -0.5},
+        "esquerda": {"vy": 0.5}
+      },
+      "virar": {
+        "direita": {"vyaw": -0.5},
+        "esquerda": {"vyaw": 0.5}
+      }
+    }
+  }
+}

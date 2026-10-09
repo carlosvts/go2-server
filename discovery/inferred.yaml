@@ -1,0 +1,88 @@
+# Tudo neste arquivo é INFERIDO: não veio da go2-api nem do go2-tvbox.
+# É a única parte do catálogo escrita à mão. Revise, edite aqui e rode:
+#
+#   uv run python scripts/build_catalog.py
+#
+# O que vem da descoberta (comandos, rotas, frases do edge, velocidades) está em
+# capabilities.json, commands.json e phrases.json, ao lado deste arquivo.
+
+# Quanto a fila espera depois de enviar cada comando, em segundos. A go2-api
+# responde 202 na hora e não avisa o fim do gesto/postura, então este tempo é o
+# único "fim" que o servidor conhece. REVISAR TODOS com o robô.
+durations:
+  stand_up: 3.0
+  stand_down: 3.0
+  sit: 3.0
+  rise_sit: 3.0
+  balance_stand: 1.5
+  recovery_stand: 4.0
+  damp: 2.0
+  hello: 5.0
+  stretch: 6.0
+  finger_heart: 6.0
+  wiggle_hips: 6.0
+  content: 6.0
+  dance1: 10.0
+  dance2: 10.0
+  scrape: 6.0
+  pose: 5.0
+
+# Variações de fala além das frases do edge. Entram como exemplos para o
+# vizinho mais próximo por embeddings.
+extra_examples:
+  stand_up: [levantar, levante, fica de pé, ficar de pé]
+  sit: [sentar, sente]
+  stand_down: [deitar, deite]
+  hello: [cumprimenta, acenar, acena, dá um oi, dar tchau]
+  stretch: [alongar, alongue, se alonga, espreguiçar, se espreguiça]
+  finger_heart: [faz um coração, fazer coração, coraçãozinho]
+  damp: [desligar os motores, desliga os motores, desligue os motores]
+
+# Aceitos só por frase exata (depois de normalizar), nunca por embedding.
+# `damp` tira a força dos motores: de pé, o robô cai.
+lexical_only: [damp]
+
+# Comandos que a go2-api aceita e para os quais o edge não tem frase. Entram
+# no catálogo DESABILITADOS: servem de distrator (quem pedir "dança" é
+# rejeitado em vez de cair no comando parecido mais próximo). Para habilitar
+# um, tire-o desta lista depois de revisar os exemplos e a duração.
+disabled:
+  rise_sit: [levanta do sentado, sair do sentado]
+  balance_stand: [modo equilíbrio, fica em equilíbrio]
+  recovery_stand: [recuperar, se recupera]
+  wiggle_hips: [rebola, rebolar]
+  content: [fica feliz, feliz]
+  dance1: [dança, dançar, dance]
+  dance2: [dança dois, segunda dança]
+  scrape: [arranha, arranhar o chão]
+  pose: [pose, faz uma pose]
+
+movement:
+  # Nome de cada combinação verbo × direção. Os verbos, as direções e as
+  # velocidades vêm do phrases.json; só o ID é escolha deste servidor.
+  ids:
+    andar: {frente: move_forward, trás: move_backward, direita: strafe_right, esquerda: strafe_left}
+    virar: {direita: turn_right, esquerda: turn_left}
+  verb_synonyms:
+    andar: [anda, ande, caminhar, caminha, caminhe, ir, vai, vá]
+    virar: [vira, vire, girar, gira, gire]
+  direction_synonyms:
+    frente: [adiante]
+    trás: [atrás, ré]
+    direita: []
+    esquerda: []
+  # Palavras de ligação ignoradas dentro de uma cláusula de movimento.
+  ignore: [para, a, o, à, ao]
+  # A go2-api só anda a partir de `balance_stand` (docs/essencial da go2-api).
+  # O servidor manda essa postura antes de um movimento quando não sabe se o
+  # robô já está nela. REVISAR com o robô: efeito com ele sentado ou deitado.
+  prepare: {command: balance_stand, wait_s: 1.5}
+  # Folga depois do fim do `move`, antes do próximo comando da fila.
+  settle_s: 0.5
+
+language:
+  negation: [não, nunca, sem]
+  separators: [e, depois, então, em seguida]
+  replacements: {pra: para, pro: para o, pras: para as, pros: para os}
+  # Removidos de qualquer cláusula antes de resolver.
+  fillers: [por favor, robô, agora, aí, um pouco, um pouquinho]

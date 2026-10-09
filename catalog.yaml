@@ -1,0 +1,209 @@
+# GERADO por scripts/build_catalog.py. Não edite à mão: o que é inferido
+# mora em discovery/inferred.yaml, e o resto vem da go2-api e do go2-tvbox.
+#
+# Marcas:
+#   # edge               frase que o usuário já fala (go2-tvbox, phrases.json)
+#   # INFERIDO           escolha deste servidor, sem respaldo nos repositórios
+#   # INFERIDO, REVISAR  idem, e precisa de conferência com o robô
+
+version: 1
+go2_api_capabilities_version: 7e4008fc1641
+
+stop:
+  id: stop
+  call: {method: POST, endpoint: /commands/stop}
+  words: [para, pare, parar, stop]  # edge
+
+commands:
+  stand_up:
+    enabled: true
+    match: embedding
+    sport_cmd: StandUp
+    call: {method: POST, endpoint: /commands/posture, body: {cmd: stand_up}}
+    max_duration_s: 3.0  # INFERIDO, REVISAR
+    examples:
+      - levanta  # edge
+      - levantar  # INFERIDO
+      - levante  # INFERIDO
+      - fica de pé  # INFERIDO
+      - ficar de pé  # INFERIDO
+  sit:
+    enabled: true
+    match: embedding
+    sport_cmd: Sit
+    call: {method: POST, endpoint: /commands/posture, body: {cmd: sit}}
+    max_duration_s: 3.0  # INFERIDO, REVISAR
+    examples:
+      - senta  # edge
+      - sentar  # INFERIDO
+      - sente  # INFERIDO
+  stand_down:
+    enabled: true
+    match: embedding
+    sport_cmd: StandDown
+    call: {method: POST, endpoint: /commands/posture, body: {cmd: stand_down}}
+    max_duration_s: 3.0  # INFERIDO, REVISAR
+    examples:
+      - deita  # edge
+      - deitar  # INFERIDO
+      - deite  # INFERIDO
+  hello:
+    enabled: true
+    match: embedding
+    sport_cmd: Hello
+    call: {method: POST, endpoint: /commands/gesture, body: {cmd: hello}}
+    max_duration_s: 5.0  # INFERIDO, REVISAR
+    examples:
+      - cumprimentar  # edge
+      - cumprimente  # edge
+      - cumprimenta  # INFERIDO
+      - acenar  # INFERIDO
+      - acena  # INFERIDO
+      - dá um oi  # INFERIDO
+      - dar tchau  # INFERIDO
+  stretch:
+    enabled: true
+    match: embedding
+    sport_cmd: Stretch
+    call: {method: POST, endpoint: /commands/gesture, body: {cmd: stretch}}
+    max_duration_s: 6.0  # INFERIDO, REVISAR
+    examples:
+      - alonga  # edge
+      - alongar  # INFERIDO
+      - alongue  # INFERIDO
+      - se alonga  # INFERIDO
+      - espreguiçar  # INFERIDO
+      - se espreguiça  # INFERIDO
+  finger_heart:
+    enabled: true
+    match: embedding
+    sport_cmd: FingerHeart
+    call: {method: POST, endpoint: /commands/gesture, body: {cmd: finger_heart}}
+    max_duration_s: 6.0  # INFERIDO, REVISAR
+    examples:
+      - coração  # edge
+      - faz um coração  # INFERIDO
+      - fazer coração  # INFERIDO
+      - coraçãozinho  # INFERIDO
+  damp:
+    enabled: true
+    match: lexical_only  # INFERIDO
+    sport_cmd: Damp
+    call: {method: POST, endpoint: /commands/posture, body: {cmd: damp}}
+    max_duration_s: 2.0  # INFERIDO, REVISAR
+    examples:
+      - desligar motores  # edge
+      - desligar os motores  # INFERIDO
+      - desliga os motores  # INFERIDO
+      - desligue os motores  # INFERIDO
+  rise_sit:
+    enabled: false  # INFERIDO, REVISAR
+    match: embedding
+    sport_cmd: RiseSit
+    call: {method: POST, endpoint: /commands/posture, body: {cmd: rise_sit}}
+    max_duration_s: 3.0  # INFERIDO, REVISAR
+    examples:
+      - levanta do sentado  # INFERIDO
+      - sair do sentado  # INFERIDO
+  balance_stand:
+    enabled: false  # INFERIDO, REVISAR
+    match: embedding
+    sport_cmd: BalanceStand
+    call: {method: POST, endpoint: /commands/posture, body: {cmd: balance_stand}}
+    max_duration_s: 1.5  # INFERIDO, REVISAR
+    examples:
+      - modo equilíbrio  # INFERIDO
+      - fica em equilíbrio  # INFERIDO
+  recovery_stand:
+    enabled: false  # INFERIDO, REVISAR
+    match: embedding
+    sport_cmd: RecoveryStand
+    call: {method: POST, endpoint: /commands/posture, body: {cmd: recovery_stand}}
+    max_duration_s: 4.0  # INFERIDO, REVISAR
+    examples:
+      - recuperar  # INFERIDO
+      - se recupera  # INFERIDO
+  wiggle_hips:
+    enabled: false  # INFERIDO, REVISAR
+    match: embedding
+    sport_cmd: WiggleHips
+    call: {method: POST, endpoint: /commands/gesture, body: {cmd: wiggle_hips}}
+    max_duration_s: 6.0  # INFERIDO, REVISAR
+    examples:
+      - rebola  # INFERIDO
+      - rebolar  # INFERIDO
+  content:
+    enabled: false  # INFERIDO, REVISAR
+    match: embedding
+    sport_cmd: Content
+    call: {method: POST, endpoint: /commands/gesture, body: {cmd: content}}
+    max_duration_s: 6.0  # INFERIDO, REVISAR
+    examples:
+      - fica feliz  # INFERIDO
+      - feliz  # INFERIDO
+  dance1:
+    enabled: false  # INFERIDO, REVISAR
+    match: embedding
+    sport_cmd: Dance1
+    call: {method: POST, endpoint: /commands/gesture, body: {cmd: dance1}}
+    max_duration_s: 10.0  # INFERIDO, REVISAR
+    examples:
+      - dança  # INFERIDO
+      - dançar  # INFERIDO
+      - dance  # INFERIDO
+  dance2:
+    enabled: false  # INFERIDO, REVISAR
+    match: embedding
+    sport_cmd: Dance2
+    call: {method: POST, endpoint: /commands/gesture, body: {cmd: dance2}}
+    max_duration_s: 10.0  # INFERIDO, REVISAR
+    examples:
+      - dança dois  # INFERIDO
+      - segunda dança  # INFERIDO
+  scrape:
+    enabled: false  # INFERIDO, REVISAR
+    match: embedding
+    sport_cmd: Scrape
+    call: {method: POST, endpoint: /commands/gesture, body: {cmd: scrape}}
+    max_duration_s: 6.0  # INFERIDO, REVISAR
+    examples:
+      - arranha  # INFERIDO
+      - arranhar o chão  # INFERIDO
+  pose:
+    enabled: false  # INFERIDO, REVISAR
+    match: embedding
+    sport_cmd: Pose
+    call: {method: POST, endpoint: /commands/gesture, body: {cmd: pose}}
+    max_duration_s: 5.0  # INFERIDO, REVISAR
+    examples:
+      - pose  # INFERIDO
+      - faz uma pose  # INFERIDO
+
+movement:
+  call: {method: POST, endpoint: /commands/move}
+  params: [vx, vy, vyaw, duration_s]
+  prepare: {command: balance_stand, wait_s: 1.5}  # INFERIDO, REVISAR
+  settle_s: 0.5  # INFERIDO, REVISAR
+  ignore: [para, a, o, à, ao]  # INFERIDO
+  verbs:
+    andar: [andar, anda, ande, caminhar, caminha, caminhe, ir, vai, vá]  # 1ª do edge, demais INFERIDAS
+    virar: [virar, vira, vire, girar, gira, gire]  # 1ª do edge, demais INFERIDAS
+  directions:
+    frente: [frente, adiante]  # 1ª do edge, demais INFERIDAS
+    trás: [trás, atrás, ré]  # 1ª do edge, demais INFERIDAS
+    direita: [direita]  # 1ª do edge, demais INFERIDAS
+    esquerda: [esquerda]  # 1ª do edge, demais INFERIDAS
+  # Velocidades e duração copiadas do edge. O `id` é INFERIDO.
+  rules:
+    - {id: move_forward, verb: andar, direction: frente, args: {vx: 0.3, vy: 0.0, vyaw: 0.0, duration_s: 1.0}}
+    - {id: move_backward, verb: andar, direction: trás, args: {vx: -0.5, vy: 0.0, vyaw: 0.0, duration_s: 1.0}}
+    - {id: strafe_right, verb: andar, direction: direita, args: {vx: 0.0, vy: -0.5, vyaw: 0.0, duration_s: 1.0}}
+    - {id: strafe_left, verb: andar, direction: esquerda, args: {vx: 0.0, vy: 0.5, vyaw: 0.0, duration_s: 1.0}}
+    - {id: turn_right, verb: virar, direction: direita, args: {vx: 0.0, vy: 0.0, vyaw: -0.5, duration_s: 1.0}}
+    - {id: turn_left, verb: virar, direction: esquerda, args: {vx: 0.0, vy: 0.0, vyaw: 0.5, duration_s: 1.0}}
+
+language:  # INFERIDO
+  negation: [não, nunca, sem]
+  separators: [e, depois, então, em seguida]
+  replacements: {pra: para, pro: para o, pras: para as, pros: para os}
+  fillers: [por favor, robô, agora, aí, um pouco, um pouquinho]

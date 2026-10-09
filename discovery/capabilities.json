@@ -1,0 +1,177 @@
+{
+  "version": "7e4008fc1641",
+  "commands": [
+    {
+      "name": "stand_up",
+      "method": "POST",
+      "endpoint": "/commands/posture",
+      "sport_cmd": "StandUp",
+      "params": [
+        "cmd"
+      ]
+    },
+    {
+      "name": "stand_down",
+      "method": "POST",
+      "endpoint": "/commands/posture",
+      "sport_cmd": "StandDown",
+      "params": [
+        "cmd"
+      ]
+    },
+    {
+      "name": "sit",
+      "method": "POST",
+      "endpoint": "/commands/posture",
+      "sport_cmd": "Sit",
+      "params": [
+        "cmd"
+      ]
+    },
+    {
+      "name": "rise_sit",
+      "method": "POST",
+      "endpoint": "/commands/posture",
+      "sport_cmd": "RiseSit",
+      "params": [
+        "cmd"
+      ]
+    },
+    {
+      "name": "balance_stand",
+      "method": "POST",
+      "endpoint": "/commands/posture",
+      "sport_cmd": "BalanceStand",
+      "params": [
+        "cmd"
+      ]
+    },
+    {
+      "name": "recovery_stand",
+      "method": "POST",
+      "endpoint": "/commands/posture",
+      "sport_cmd": "RecoveryStand",
+      "params": [
+        "cmd"
+      ]
+    },
+    {
+      "name": "damp",
+      "method": "POST",
+      "endpoint": "/commands/posture",
+      "sport_cmd": "Damp",
+      "params": [
+        "cmd"
+      ]
+    },
+    {
+      "name": "hello",
+      "method": "POST",
+      "endpoint": "/commands/gesture",
+      "sport_cmd": "Hello",
+      "params": [
+        "cmd"
+      ]
+    },
+    {
+      "name": "stretch",
+      "method": "POST",
+      "endpoint": "/commands/gesture",
+      "sport_cmd": "Stretch",
+      "params": [
+        "cmd"
+      ]
+    },
+    {
+      "name": "finger_heart",
+      "method": "POST",
+      "endpoint": "/commands/gesture",
+      "sport_cmd": "FingerHeart",
+      "params": [
+        "cmd"
+      ]
+    },
+    {
+      "name": "wiggle_hips",
+      "method": "POST",
+      "endpoint": "/commands/gesture",
+      "sport_cmd": "WiggleHips",
+      "params": [
+        "cmd"
+      ]
+    },
+    {
+      "name": "content",
+      "method": "POST",
+      "endpoint": "/commands/gesture",
+      "sport_cmd": "Content",
+      "params": [
+        "cmd"
+      ]
+    },
+    {
+      "name": "dance1",
+      "method": "POST",
+      "endpoint": "/commands/gesture",
+      "sport_cmd": "Dance1",
+      "params": [
+        "cmd"
+      ]
+    },
+    {
+      "name": "dance2",
+      "method": "POST",
+      "endpoint": "/commands/gesture",
+      "sport_cmd": "Dance2",
+      "params": [
+        "cmd"
+      ]
+    },
+    {
+      "name": "scrape",
+      "method": "POST",
+      "endpoint": "/commands/gesture",
+      "sport_cmd": "Scrape",
+      "params": [
+        "cmd"
+      ]
+    },
+    {
+      "name": "pose",
+      "method": "POST",
+      "endpoint": "/commands/gesture",
+      "sport_cmd": "Pose",
+      "params": [
+        "cmd"
+      ]
+    },
+    {
+      "name": "move",
+      "method": "POST",
+      "endpoint": "/commands/move",
+      "sport_cmd": "Move",
+      "params": [
+        "vx",
+        "vy",
+        "vyaw",
+        "duration_s"
+      ]
+    },
+    {
+      "name": "stop",
+      "method": "POST",
+      "endpoint": "/commands/stop",
+      "sport_cmd": "StopMove",
+      "params": []
+    },
+    {
+      "name": "speed",
+      "method": "PUT",
+      "endpoint": "/commands/speed",
+      "sport_cmd": "SpeedLevel",
+      "params": [
+        "level"
+      ]
+    }
+  ]
+}
