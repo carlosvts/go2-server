@@ -1,10 +1,10 @@
-# Tudo neste arquivo é INFERIDO: não veio da go2-api nem do go2-tvbox.
-# É a única parte do catálogo escrita à mão. Revise, edite aqui e rode:
+# Tudo neste arquivo é INFERIDO: não veio da go2-api nem de phrases.json.
+# Revise, edite aqui (ou em phrases.json) e rode:
 #
 #   uv run python scripts/build_catalog.py
 #
-# O que vem da descoberta (comandos, rotas, frases do edge, velocidades) está em
-# capabilities.json, commands.json e phrases.json, ao lado deste arquivo.
+# Comandos e rotas estão em capabilities.json (da go2-api); frases e
+# velocidades, em commands.json e phrases.json, ao lado deste arquivo.
 
 # Quanto a fila espera depois de enviar cada comando, em segundos. A go2-api
 # responde 202 na hora e não avisa o fim do gesto/postura, então este tempo é o
@@ -27,7 +27,7 @@ durations:
   scrape: 6.0
   pose: 5.0
 
-# Variações de fala além das frases do edge. Entram como exemplos para o
+# Variações de fala além das frases de phrases.json. Entram como exemplos para o
 # vizinho mais próximo por embeddings.
 extra_examples:
   stand_up: [levantar, levante, fica de pé, ficar de pé]
@@ -42,7 +42,7 @@ extra_examples:
 # `damp` tira a força dos motores: de pé, o robô cai.
 lexical_only: [damp]
 
-# Comandos que a go2-api aceita e para os quais o edge não tem frase. Entram
+# Comandos que a go2-api aceita e para os quais phrases.json não tem frase. Entram
 # no catálogo DESABILITADOS: servem de distrator (quem pedir "dança" é
 # rejeitado em vez de cair no comando parecido mais próximo). Para habilitar
 # um, tire-o desta lista depois de revisar os exemplos e a duração.

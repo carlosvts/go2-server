@@ -1,16 +1,15 @@
-"""Gera `catalog.yaml` a partir da descoberta nos dois repositórios.
+"""Gera `catalog.yaml` a partir da go2-api e das frases em `discovery/`.
 
 Entradas (pasta `discovery/`):
 
     capabilities.json   resposta de `GET /capabilities` da go2-api
-    commands.json       `config/commands.json` do go2-tvbox
-    phrases.json        `config/phrases.json` do go2-tvbox
-    inferred.yaml       a parte escrita à mão (durações, sinônimos, IDs)
+    commands.json       comandos e frases exatas, editado à mão
+    phrases.json        frases que o usuário fala, editado à mão
+    inferred.yaml       durações, sinônimos, IDs, também à mão
 
-Para atualizar a descoberta a partir dos repositórios e da API no ar:
+Para atualizar `capabilities.json` a partir da API no ar:
 
-    uv run python scripts/build_catalog.py \
-        --tvbox ../go2-tvbox --capabilities http://127.0.0.1:8000/capabilities
+    uv run python scripts/build_catalog.py --capabilities http://127.0.0.1:8000/capabilities
 
 Sem argumentos, só regenera o catálogo com o que já está em `discovery/`. O
 script falha (código 1) se o edge usar um comando que a API não tem ou que
@@ -19,7 +18,6 @@ diverge dela, e imprime o resumo da reconciliação.
 
 import argparse
 import json
-import shutil
 import sys
 import urllib.request
 from pathlib import Path
@@ -32,10 +30,7 @@ INFERRED_TAG = "# INFERIDO"
 REVIEW_TAG = "# INFERIDO, REVISAR"
 
 
-def refresh(tvbox: Path | None, capabilities: str | None) -> None:
-    if tvbox is not None:
-        for name in ("commands.json", "phrases.json"):
-            shutil.copy(tvbox / "config" / name, DISCOVERY / name)
+def refresh(capabilities: str | None) -> None:
     if capabilities is not None:
         if capabilities.startswith("http"):
             with urllib.request.urlopen(capabilities, timeout=5) as response:
@@ -95,10 +90,10 @@ def build() -> tuple[str, list[str], list[str]]:
 
     out: list[str] = [
         "# GERADO por scripts/build_catalog.py. Não edite à mão: o que é inferido",
-        "# mora em discovery/inferred.yaml, e o resto vem da go2-api e do go2-tvbox.",
+        "# mora em discovery/inferred.yaml, e o resto vem da go2-api e de discovery/phrases.json.",
         "#",
         "# Marcas:",
-        "#   # edge               frase que o usuário já fala (go2-tvbox, phrases.json)",
+        "#   # edge               frase que o usuário já fala (discovery/phrases.json)",
         "#   # INFERIDO           escolha deste servidor, sem respaldo nos repositórios",
         "#   # INFERIDO, REVISAR  idem, e precisa de conferência com o robô",
         "",
@@ -204,12 +199,11 @@ def build() -> tuple[str, list[str], list[str]]:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    parser.add_argument("--tvbox", type=Path, help="clone do go2-tvbox, para recopiar os JSON")
     parser.add_argument("--capabilities", help="URL ou arquivo com o GET /capabilities")
     parser.add_argument("--output", type=Path, default=ROOT / "catalog.yaml")
     args = parser.parse_args()
 
-    refresh(args.tvbox, args.capabilities)
+    refresh(args.capabilities)
     text, problems, notes = build()
     for note in notes:
         print(note)

@@ -1,6 +1,6 @@
 # go2-server
 
-Servidor de inferência e despacho dos comandos de voz do Go2 (NEURON/UFLA). Roda no mesmo PC da [go2-api](https://github.com/carlosvts/go2-api). Recebe da TV Box ([go2-tvbox](https://github.com/carlosvts/go2-tvbox)) o áudio de uma frase, transcreve, interpreta, mantém a fila de execução e chama a go2-api.
+Servidor de inferência e despacho dos comandos de voz do Go2 (NEURON/UFLA). Roda no mesmo PC da [go2-api](https://github.com/carlosvts/go2-api). A TV Box ([go2-tvbox](https://github.com/carlosvts/go2-tvbox)) só detecta a wake word e manda o áudio da frase; este servidor transcreve, interpreta, mantém a fila de execução e chama a go2-api.
 
 ```
 TV Box ──áudio──▶ go2-server: transcrição → interpretação → fila ──HTTP──▶ go2-api ──▶ robô
@@ -13,59 +13,107 @@ A interpretação **não usa LLM**. Ela só seleciona comandos de um catálogo f
 
 ## Estado
 
-O que está validado e o que não está:
-
-- **Validado:** 160 testes (`uv run pytest`), com a go2-api e a transcrição falsas; quatro deles rodam o conjunto rotulado no modelo de embeddings real.
-- **Não validado:** nada foi testado com a go2-api real, com o robô, com a TV Box nem com fala real. Veja [O que falta validar](#o-que-falta-validar).
+- **Validado:** 161 testes (`uv run pytest`), com a go2-api e a transcrição falsas; quatro deles rodam o conjunto rotulado no modelo de embeddings real. Ponta a ponta com a TV Box: 75 interações em 24/10/2026.
+- **Não validado:** veja [O que falta validar](#o-que-falta-validar).
 
 ## Como rodar
 
-Requer Linux, [uv](https://docs.astral.sh/uv/) e a go2-api (branch `dev`) no ar.
+### 1. Pré-requisitos
+
+- Linux, no mesmo PC da go2-api.
+- [uv](https://docs.astral.sh/uv/) instalado.
+- A go2-api (branch `dev`) no ar. Confira:
+
+  ```bash
+  curl http://127.0.0.1:8000/capabilities
+  ```
+
+  Tem de devolver a lista de comandos. A branch `main` da go2-api não tem essa rota nem a do desvio de obstáculo.
+- Para o Whisper `medium` (padrão), uma GPU NVIDIA com driver instalado. Sem GPU, veja o passo 3.
+
+### 2. Instale
 
 ```bash
-cp .env.example .env          # ajuste GO2S_GO2_API_URL se a API não estiver em 127.0.0.1:8000
+git clone git@github.com:carlosvts/go2-server.git
+cd go2-server
 uv sync
+```
+
+### 3. Configure
+
+```bash
+cp .env.example .env
+```
+
+O `.env.example` já serve como está quando a go2-api roda em `127.0.0.1:8000`. Se não, ajuste `GO2S_GO2_API_URL`. Sem GPU, descomente e troque o modelo:
+
+```
+GO2S_WHISPER_MODEL=small
+```
+
+O `medium` na CPU pode demorar mais que os 5 s que a TV Box espera pela resposta.
+
+### 4. Suba o servidor
+
+```bash
 uv run uvicorn app.main:create_app --factory --host 0.0.0.0 --port 9000
 ```
 
-Na primeira subida o servidor baixa o modelo do Whisper (`medium`, ~1,5 GB) e o de embeddings (~470 MB). O log mostra `go2-server pronto` quando aceita frases.
+Na primeira subida o servidor baixa o modelo do Whisper (`medium`, ~1,5 GB) e o de embeddings (~470 MB), então demora. Espere no log:
+
+- `Whisper medium em cuda (float16)` (ou `cpu`, se você escolheu a CPU);
+- `go2-server pronto`, quando já aceita frases.
+
+### 5. Confira
+
+```bash
+curl http://127.0.0.1:9000/health
+```
+
+A resposta diz se a go2-api responde e quantos comandos há na fila.
+
+### 6. Teste sem a TV Box
+
+```bash
+uv run python scripts/send_wav.py --say "hey jarvis senta" --reason wake_word
+uv run python scripts/send_wav.py frase.wav --reason wake_word
+uv run python scripts/send_wav.py --cancel stop
+```
+
+A primeira linha faz o robô sentar: teste com ele num lugar seguro. `--say` sintetiza a frase (precisa de `sox` e de `espeak-ng`, ou de uma voz do Piper: veja `scripts/tts.py`). A resposta impressa traz `status`, `transcript` e `commands`.
+
+### 7. Aponte a TV Box para o servidor
+
+No `.env` do [go2-tvbox](https://github.com/carlosvts/go2-tvbox):
+
+```
+SERVER_URL=http://<IP_DO_PC>:9000
+```
+
+O padrão da TV Box (`FALLBACK_OK_STATUSES=enqueued,stopped`) já bate com os status deste servidor. Diga "hey jarvis", espere o beep e diga o comando. Tenha a parada manual da TV Box (`uv run python -m sense.stop`) ou o controle físico à mão.
 
 ### GPU
 
-O padrão é o Whisper `medium`, pensado para rodar na GPU (`GO2S_WHISPER_DEVICE=auto` usa CUDA se houver). Para a GPU funcionar, o driver da NVIDIA tem de estar instalado e o processo precisa enxergar as bibliotecas cuBLAS e cuDNN 9 para CUDA 12. Sem elas no sistema:
+`GO2S_WHISPER_DEVICE=auto` (padrão) usa CUDA se houver. O processo precisa enxergar as bibliotecas cuBLAS e cuDNN 9 para CUDA 12. Sem elas no sistema:
 
 ```bash
 uv sync --extra gpu
 export LD_LIBRARY_PATH=$(uv run python -c 'import nvidia.cublas, nvidia.cudnn; print(nvidia.cublas.__path__[0] + "/lib:" + nvidia.cudnn.__path__[0] + "/lib")')
 ```
 
-Confira no log da subida a linha `Whisper medium em cuda (float16)`. Se aparecer `Whisper não subiu em cuda (...); tentando cpu`, a GPU falhou e o servidor caiu para a CPU: o `medium` na CPU pode demorar mais que os 5 s que a TV Box espera, então corrija a GPU ou use `GO2S_WHISPER_MODEL=small` ou `base`. O caminho da GPU **não foi testado** (o desenvolvimento foi numa máquina sem placa).
-
-Na TV Box, aponte o edge para ele e **corrija os status aceitos** (o padrão do edge não inclui os deste servidor):
-
-```
-SERVER_URL=http://<IP_DO_PC>:9000
-FALLBACK_OK_STATUSES=enqueued,stopped
-```
+Rode o `export` no mesmo terminal antes do passo 4. Se o log mostrar `Whisper não subiu em cuda (...); tentando cpu`, a GPU falhou e o servidor caiu para a CPU: corrija a GPU ou use `GO2S_WHISPER_MODEL=small` ou `base`.
 
 ### Com Docker, ao lado da go2-api
 
+No lugar dos passos 2 a 4:
+
 ```bash
+cp .env.example .env
 docker compose --profile server up -d --build
 docker compose logs -f go2-server
 ```
 
 O container usa a rede do host, como o da go2-api, e tem teto de 4 CPUs para não tirar processador do reenvio do `Move`. Para o container usar a GPU, instale o NVIDIA Container Toolkit e descomente `gpus: all` no `docker-compose.yml`. Como serviço systemd, sem Docker: instruções em `deploy/go2-server.service`.
-
-### Testar sem a TV Box
-
-```bash
-uv run python scripts/send_wav.py frase.wav
-uv run python scripts/send_wav.py --say "hey jarvis senta" --reason wake_word
-uv run python scripts/send_wav.py --cancel stop
-```
-
-`--say` sintetiza a frase (precisa de `sox` e de `espeak-ng`, ou de uma voz do Piper: veja `scripts/tts.py`).
 
 ## Contrato
 
@@ -74,9 +122,9 @@ uv run python scripts/send_wav.py --cancel stop
 | Campo | Conteúdo |
 |---|---|
 | `audio` | WAV mono 16 kHz PCM16 |
-| `meta` | JSON: `utterance_id`, `edge_id`, `reason`, `local_hypothesis`, `local_confidence` |
+| `meta` | JSON: `utterance_id`, `edge_id` (quem enviou, ex. a TV Box), `reason`, `local_hypothesis`, `local_confidence` |
 
-`reason` é `unk`, `low_conf` ou `too_long` (modo edge) ou `wake_word` (modo thin, com `local_*` nulos). Valor desconhecido é aceito e logado. Só responde `422` para áudio ausente ou em outro formato, `meta` ilegível e `utterance_id` ausente.
+A TV Box manda `reason="wake_word"` e `local_*` nulos. Outro `reason` é aceito e logado. Só responde `422` para áudio ausente ou em outro formato, `meta` ilegível e `utterance_id` ausente.
 
 Resposta `200`:
 
@@ -98,11 +146,11 @@ A repetição de um `utterance_id` devolve a mesma resposta e não executa nada 
 
 ### `POST /v1/cancel`
 
-`{"reason": "stop" | "local_command", "edge_id": "…"}` (`edge_id` opcional). Limpa a fila e interrompe o comando em andamento. Com `stop`, também chama `POST /commands/stop` na go2-api; repetir é inofensivo. Responde `{"cleared": n, "stop_sent": true|false|null}`.
+`{"reason": "stop" | "local_command", "edge_id": "…"}` (`edge_id` opcional). A parada manual da TV Box manda `{"reason": "stop"}`. Limpa a fila e interrompe o comando em andamento. Com `stop`, também chama `POST /commands/stop` na go2-api; repetir é inofensivo. Responde `{"cleared": n, "stop_sent": true|false|null}`.
 
 ### `GET /health` e `GET /v1/stats`
 
-`/health` informa a fila pendente, o último erro de despacho e se a go2-api responde. `/v1/stats` traz, por `reason`, a contagem por `status`, a latência média e p95, e a latência das paradas à parte: serve para comparar os modos edge e thin.
+`/health` informa a fila pendente, o último erro de despacho e se a go2-api responde. `/v1/stats` traz, por `reason`, a contagem por `status`, a latência média e p95, e a latência das paradas à parte.
 
 ## Como uma frase é interpretada
 
@@ -125,17 +173,19 @@ A repetição de um `utterance_id` devolve a mesma resposta e não executa nada 
 
 ```bash
 uv run python scripts/build_catalog.py                       # regenera com o que há em discovery/
-uv run python scripts/build_catalog.py --tvbox ../go2-tvbox \
-    --capabilities http://127.0.0.1:8000/capabilities        # refaz a descoberta
+uv run python scripts/build_catalog.py \
+    --capabilities http://127.0.0.1:8000/capabilities        # e antes relê a go2-api
 ```
 
 | Arquivo em `discovery/` | Origem |
 |---|---|
 | `capabilities.json` | `GET /capabilities` da go2-api |
-| `commands.json`, `phrases.json` | `config/` do go2-tvbox |
+| `commands.json`, `phrases.json` | **escritos à mão: as frases que o usuário fala** |
 | `inferred.yaml` | **escrito à mão: é o que você revisa** |
 
-Tudo o que não veio dos dois repositórios está em `inferred.yaml` e sai no catálogo marcado `INFERIDO` ou `INFERIDO, REVISAR`: as durações de espera de cada comando, os sinônimos, os IDs dos movimentos, a postura de preparo e a lista de comandos desabilitados. O relatório da reconciliação está em [docs/divergencias.md](docs/divergencias.md).
+Para mudar as frases, edite `discovery/phrases.json` (frases que o usuário fala) e `discovery/inferred.yaml` (sinônimos, exemplos extras, durações) e rode `uv run python scripts/build_catalog.py`, sem argumentos.
+
+Tudo o que não veio da go2-api nem de `phrases.json` está em `inferred.yaml` e sai no catálogo marcado `INFERIDO` ou `INFERIDO, REVISAR`: as durações de espera de cada comando, os sinônimos, os IDs dos movimentos, a postura de preparo e a lista de comandos desabilitados. O relatório da reconciliação está em [docs/divergencias.md](docs/divergencias.md).
 
 ## Fila
 
@@ -172,7 +222,7 @@ Resultado no conjunto atual, que definiu os padrões:
 
 Duas conclusões: quase todo o acerto vem do caminho lexical e dos slots, e o `multilingual-e5-small` não acrescenta nada sem falso positivo (os cossenos dele ficam todos altos e a margem não separa). O jeito mais barato de subir a revocação é acrescentar exemplos em `discovery/inferred.yaml`, não baixar o limiar.
 
-Para montar um conjunto de fala real, ligue `GO2S_SAVE_UTTERANCES=1`: cada frase recebida fica em `captures/<data>/<utterance_id>.wav` com um `.json` ao lado (transcrição antes e depois da wake word, comandos, scores, tempos). As transcrições rejeitadas que as pessoas repetem são candidatas à gramática do edge.
+Para montar um conjunto de fala real, ligue `GO2S_SAVE_UTTERANCES=1`: cada frase recebida fica em `captures/<data>/<utterance_id>.wav` com um `.json` ao lado (transcrição antes e depois da wake word, comandos, scores, tempos). As transcrições rejeitadas que as pessoas repetem são candidatas a exemplos em `discovery/inferred.yaml`.
 
 ## Observabilidade
 
@@ -192,7 +242,7 @@ app/
   transcribe/        faster-whisper, Vosk e a faixa reservada para áudio curto
   metrics.py, logging_setup.py, audio.py, config.py
 catalog.yaml         gerado
-discovery/           o que foi lido dos repositórios + inferred.yaml
+discovery/           capabilities.json da go2-api, frases e inferred.yaml
 eval/phrases.yaml    conjunto rotulado
 scripts/             build_catalog, calibrate, bench_stt, send_wav, tts
 deploy/              Dockerfile e serviço systemd
@@ -206,7 +256,6 @@ tests/
 2. **Latência e memória no PC de destino, e o Whisper na GPU.** O desenvolvimento foi feito em outra máquina, sem placa. Rode `scripts/bench_stt.py` no PC da go2-api para confirmar que o `medium` sobe em `cuda` e conferir a latência da parada falada.
 3. **Vosk com modelo grande.** `vosk-model-pt-fb-v0.1.1` (1,6 GB) não foi medido: o download não completou. O script já o compara se a pasta estiver em `models/`.
 4. **go2-api real e o robô.** Nenhuma chamada saiu para a API de verdade. Em especial: `balance_stand` antes de andar (sentado e deitado), as durações de cada gesto, e se o `stop` interrompe um gesto.
-5. **Modo thin.** Não existe na branch lida do go2-tvbox; só os testes e o `send_wav.py` enviam `reason="wake_word"`.
-6. **Grafias da wake word.** A lista em `GO2S_WAKE_WORDS` é um palpite. Ajuste com o que o Whisper escrever de verdade (campo `transcript_raw` do log).
-7. **Disputa de CPU com a go2-api.** O teto de 4 CPUs é um chute; confira se o robô anda liso enquanto o servidor transcreve.
-8. **A imagem Docker** não foi construída nem executada.
+5. **Grafias da wake word.** A lista em `GO2S_WAKE_WORDS` é um palpite. Ajuste com o que o Whisper escrever de verdade (campo `transcript_raw` do log).
+6. **Disputa de CPU com a go2-api.** O teto de 4 CPUs é um chute; confira se o robô anda liso enquanto o servidor transcreve.
+7. **A imagem Docker** não foi construída nem executada.

@@ -1,8 +1,8 @@
 # GERADO por scripts/build_catalog.py. Não edite à mão: o que é inferido
-# mora em discovery/inferred.yaml, e o resto vem da go2-api e do go2-tvbox.
+# mora em discovery/inferred.yaml, e o resto vem da go2-api e de discovery/phrases.json.
 #
 # Marcas:
-#   # edge               frase que o usuário já fala (go2-tvbox, phrases.json)
+#   # edge               frase que o usuário já fala (discovery/phrases.json)
 #   # INFERIDO           escolha deste servidor, sem respaldo nos repositórios
 #   # INFERIDO, REVISAR  idem, e precisa de conferência com o robô
 

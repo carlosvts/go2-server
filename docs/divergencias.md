@@ -1,33 +1,36 @@
-# Divergências entre o edge (go2-tvbox) e a go2-api
+# Divergências entre a TV Box, o catálogo e a go2-api
 
-Levantadas em 2026-10-09, lendo `go2-api@c880e68` (branch `dev`) e `go2-tvbox@8e324bb` (branch `sense-mode-config`). Os arquivos usados estão em `discovery/`; `scripts/build_catalog.py` repete a conferência e falha se o edge passar a usar um comando que a API não tem.
+Levantadas em 2026-10-09, lendo `go2-api@c880e68` (branch `dev`), e revistas em 2026-10-24. Os arquivos usados estão em `discovery/`; `scripts/build_catalog.py` repete a conferência e falha se `commands.json` ou `phrases.json` usarem um comando que a API não tem.
 
 ## O que precisa de ação
 
 | # | Divergência | Onde | O que fazer |
 |---|---|---|---|
-| 1 | O edge considera confirmado só `ok,accepted,queued,executed` (`FALLBACK_OK_STATUSES`). O contrato deste servidor responde `enqueued` e `stopped`. Sem ajuste, **toda frase aceita toca o som de recusa**. | go2-tvbox `.env` | `FALLBACK_OK_STATUSES=enqueued,stopped` na TV Box. |
-| 2 | Depois de `stand_up` ("levanta"), o `move` responde 202 e o robô não anda: a API exige `balance_stand`. Nem o edge nem a API tratam isso. | go2-api `docs/essencial/balance-stand-vs-stand-up.md` | O servidor manda `balance_stand` antes de um movimento quando não sabe se o robô já está nela (`movement.prepare` no catálogo). **Validar com o robô**, em especial sentado e deitado. O edge continua com o problema nos movimentos locais. |
-| 3 | "andar para frente" é 0,3 m/s e "andar para trás" é 0,5 m/s. Andar de ré mais rápido que de frente parece invertido. | go2-tvbox `phrases.json` | Copiado como está. Revisar no edge e regenerar o catálogo. |
-| 4 | O modo thin não existe na branch lida: nenhum código envia `reason="wake_word"` nem `local_*` nulos. | go2-tvbox | O servidor já aceita; só foi exercitado pelos testes e por `scripts/send_wav.py`. |
-| 5 | A branch `main` da go2-api está 15 commits atrás de `dev` e não tem `GET /capabilities` nem `/safety/obstacle-avoidance`. | go2-api | Rodar o servidor contra `dev`, ou pôr `GO2S_ENSURE_OBSTACLE_AVOIDANCE=0` (não recomendado). |
+| 1 | Depois de `stand_up` ("levanta"), o `move` responde 202 e o robô não anda: a API exige `balance_stand`. A API não trata isso. | go2-api `docs/essencial/balance-stand-vs-stand-up.md` | O servidor manda `balance_stand` antes de um movimento quando não sabe se o robô já está nela (`movement.prepare` no catálogo). **Validar com o robô**, em especial sentado e deitado. |
+| 2 | "andar para frente" é 0,3 m/s e "andar para trás" é 0,5 m/s. Andar de ré mais rápido que de frente parece invertido. | `discovery/phrases.json` | Revisar ali e regenerar o catálogo. |
+| 3 | A branch `main` da go2-api está 15 commits atrás de `dev` e não tem `GET /capabilities` nem `/safety/obstacle-avoidance`. | go2-api | Rodar o servidor contra `dev`, ou pôr `GO2S_ENSURE_OBSTACLE_AVOIDANCE=0` (não recomendado). |
+
+## Resolvidas
+
+| Divergência | Como ficou |
+|---|---|
+| A TV Box considerava confirmado só `ok,accepted,queued,executed` (`FALLBACK_OK_STATUSES`), e toda frase aceita tocava o som de recusa. | O padrão da TV Box agora é `FALLBACK_OK_STATUSES=enqueued,stopped`. |
+| O envio com `reason="wake_word"` e `local_*` nulos só tinha sido exercitado pelos testes e por `scripts/send_wav.py`. | Testado com a TV Box: 75 interações em 24/10/2026. |
 
 ## Tratadas no servidor, sem ação
 
 | Divergência | Como ficou |
 |---|---|
-| O edge manda `/v1/cancel` só com `{"reason"}`, sem `edge_id`. | `edge_id` é opcional no cancel. |
-| O edge manda `meta` como parte multipart com `Content-Type: application/json`. | Aceito como campo de texto ou como arquivo. |
-| O edge confere e liga o desvio de obstáculo antes de cada movimento local, e avisa que os movimentos do servidor não passam por lá. | O servidor faz a mesma conferência antes de um movimento (`GO2S_ENSURE_OBSTACLE_AVOIDANCE`). A ressalva da go2-api continua: ela não comprovou que o desvio filtra o `move`. |
-| No edge, uma palavra de parada em qualquer lugar da frase para o robô, menos numa frase exata de movimento. | No servidor: frase só de parada, cláusula só de parada, ou frase que termina em palavra de parada. "para frente" sozinho é rejeitado, não é parada. |
-| O edge tem cooldown de 2 s para comando repetido. | O servidor não tem: a repetição chega com outro `utterance_id` e substitui a fila. |
+| A parada manual da TV Box manda `/v1/cancel` só com `{"reason": "stop"}`, sem `edge_id`. | `edge_id` é opcional no cancel. |
+| A TV Box manda `meta` como parte multipart com `Content-Type: application/json`. | Aceito como campo de texto ou como arquivo. |
+| A go2-api não liga o desvio de obstáculo sozinha. | O servidor confere e liga o desvio antes de um movimento (`GO2S_ENSURE_OBSTACLE_AVOIDANCE`). A ressalva da go2-api continua: ela não comprovou que o desvio filtra o `move`. |
 | A TV Box desiste da resposta em 5 s (`FALLBACK_TIMEOUT_S`) e só mantém uma frase em voo. | O servidor responde assim que enfileira, sem esperar a execução. Frase com mais de `GO2S_MAX_UTTERANCE_AGE_S` (4 s) não é executada. |
 
 ## Comandos
 
-A go2-api (`dev`) aceita 19 comandos. O edge fala 9 deles.
+A go2-api (`dev`) aceita 19 comandos. `phrases.json` tem frase para 9 deles.
 
-| Comando da go2-api | Frase no edge | No catálogo |
+| Comando da go2-api | Frase em `phrases.json` | No catálogo |
 |---|---|---|
 | `stop` | para, pare, parar, stop | parada |
 | `stand_up`, `sit`, `stand_down` | levanta, senta, deita | habilitados |
@@ -38,9 +41,9 @@ A go2-api (`dev`) aceita 19 comandos. O edge fala 9 deles.
 | `wiggle_hips`, `content`, `dance1`, `dance2`, `scrape`, `pose` | — | desabilitados |
 | `speed` | — | fora: exige um nível numérico |
 
-Nenhum comando do edge falta na API, e método, rota e campos batem nos nove.
+Nenhum comando de `commands.json` falta na API, e método, rota e campos batem nos nove.
 
-O edge chama os seis movimentos de `move` com argumentos fixos. O servidor dá um ID a cada combinação, porque a resposta tem de dizer qual foi:
+`phrases.json` dá argumentos fixos aos seis movimentos de `move`. O servidor dá um ID a cada combinação, porque a resposta tem de dizer qual foi:
 
 | ID (escolha do servidor) | Verbo + direção | `move` |
 |---|---|---|
